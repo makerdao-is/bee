@@ -271,6 +271,15 @@ func (s *Service) Pay(ctx context.Context, peer swarm.Address, amount, checkAllo
 		lastTime.Timestamp = 0
 	}
 
+	// check whether at least 1 second have passed since last refresh according to own timestamp and peers timestamp
+	currentTime := s.timeNow().Unix()
+	if currentTime <= lastTime.CheckTimestamp || currentTime <= lastTime.Timestamp {
+		// if not, return error too soon
+		// this is to avoid the peer receiving 2 refresh attempts from our node in the same second
+		// of which the second one would be refused and would lead to a disconnect from our node's enforcement of refreshments
+		return nil, 0, ErrSettlementTooSoon
+	}
+
 	stream, err := s.streamer.NewStream(ctx, peer, nil, protocolName, protocolVersion, streamName)
 	if err != nil {
 		return nil, 0, err

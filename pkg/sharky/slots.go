@@ -64,8 +64,8 @@ func (sl *slots) extend(n int) {
 }
 
 // next returns the lowest free slot after start.
-func (sl *slots) next(start uint32) uint32 {
-	for i := start; i < sl.size; i++ {
+func (sl *slots) next(_ uint32) uint32 {
+	for i := uint32(0); i < sl.size; i++ {
 		if sl.data[i/8]&(1<<(i%8)) > 0 {
 			return i
 		}
